@@ -19,4 +19,7 @@ public class RepairerRepository {
     public Repairer findById(Long id) {
         return database.get(id);
     }
+
+    public void addRepairer(Repairer johnDoe) {
+    }
 }

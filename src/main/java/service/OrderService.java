@@ -12,7 +12,7 @@ import java.util.Comparator;
 import java.util.List;
 
 public class OrderService {
-    private final OrderRepository orderRepository;
+    private  final OrderRepository orderRepository;
     private final RepairerRepository repairerRepository;
 
     public OrderService(OrderRepository orderRepository, RepairerRepository repairerRepository) {
@@ -20,10 +20,11 @@ public class OrderService {
         this.repairerRepository = repairerRepository;
     }
 
-    public void openOrder(double price) {
+    public Order openOrder(double price) {
         Order order = new Order(null, price);
         Order savedOrder = orderRepository.save(order);
         System.out.println("Success: Opened new order with ID " + savedOrder.getId());
+        return order;
     }
 
     public void assignRepairer(Long orderId, Long repairerId) {
