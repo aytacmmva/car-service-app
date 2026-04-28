@@ -3,10 +3,8 @@ package carservice;
 import enums.OrderStatus;
 import model.Order;
 import model.Repairer;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import repository.OrderRepository;
 import repository.RepairerRepository;
 import service.OrderService;
@@ -71,8 +69,6 @@ public class OrderServiceTest {
         assertEquals(OrderStatus.CANCELLED, canceledOrder.getStatus());
     }
 }
-
-
 
 
 
