@@ -1,4 +1,5 @@
 
+import model.GarageManager;
 import repository.OrderRepository;
 import repository.RepairerRepository;
 import service.OrderService;
@@ -7,6 +8,11 @@ import java.util.Scanner;
 
     public class Main {
         public static void main(String[] args) {
+
+            GarageManager manager = new GarageManager();
+            manager.printConfig();
+
+
             // Manual Dependency Injection
             OrderRepository orderRepository = new OrderRepository();
             RepairerRepository repairerRepository = new RepairerRepository();
