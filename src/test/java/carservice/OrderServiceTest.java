@@ -3,114 +3,71 @@ package carservice;
 import enums.OrderStatus;
 import model.Order;
 import model.Repairer;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import repository.OrderRepository;
 import repository.RepairerRepository;
-
 import service.OrderService;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 public class OrderServiceTest {
 
-    @Mock
     private OrderRepository orderRepository;
-
-    @Mock
     private RepairerRepository repairerRepository;
-
-    @InjectMocks
     private OrderService orderService;
-
-    private Order order;
 
     @BeforeEach
     void setUp() {
+        orderRepository = new OrderRepository();
+        repairerRepository = new RepairerRepository();
+        orderService = new OrderService(orderRepository, repairerRepository);
 
-        order = new Order(1L, 150.0);
-
+        repairerRepository.addRepairer(new Repairer(1L, "John Doe"));
     }
 
     @Test
     void testOpenOrder_SuccessfullyOpens() {
+        double price = 150.5;
 
-        when(orderRepository.save(any(Order.class)))
-                .thenReturn(order);
-
-        Order result = orderService.openOrder(150.0);
+        Order result = orderService.openOrder(price);
 
         assertNotNull(result);
-
-        assertEquals(150.0, result.getPrice());
-
-        verify(orderRepository, times(1))
-                .save(any(Order.class));
+        assertEquals(price, result.getPrice());
     }
 
     @Test
     void testAssignRepairer_SuccessfullyAssigned() {
-
-        Repairer repairer =
-                new Repairer(1L, "John Doe");
-
-        when(orderRepository.findById(1L))
-                .thenReturn(order);
-
-        when(repairerRepository.findById(1L))
-                .thenReturn(repairer);
+        Order newOrder = orderService.openOrder(200.0);
+        Long id = newOrder.getId();
 
         assertDoesNotThrow(() -> {
-            orderService.assignRepairer(1L, 1L);
+            orderService.assignRepairer(id, 1L);
         });
-
-        verify(orderRepository, times(1))
-                .findById(1L);
-
-        verify(repairerRepository, times(1))
-                .findById(1L);
     }
 
     @Test
     void testCompleteOrder_ThrowsExceptionIfNoRepairer() {
+        Order order = orderService.openOrder(100.0);
+        Long id = order.getId();
 
-        when(orderRepository.findById(1L))
-                .thenReturn(order);
+        Exception ex = assertThrows(IllegalStateException.class, () -> {
+            orderService.completeOrder(id);
+        });
 
-        Exception ex = assertThrows(
-                IllegalStateException.class,
-                () -> {
-                    orderService.completeOrder(1L);
-                }
-        );
-
-        assertTrue(
-                ex.getMessage().contains("repairer")
-        );
+        assertTrue(ex.getMessage().contains("repairer"));
     }
 
     @Test
     void testCancelOrder_SuccessfullyCanceled() {
+        Order order = orderService.openOrder(300.0);
+        Long id = order.getId();
 
-        when(orderRepository.findById(1L))
-                .thenReturn(order);
+        orderService.cancelOrder(id);
 
-        orderService.cancelOrder(1L);
-
-        assertEquals(
-                OrderStatus.CANCELLED,
-                order.getStatus()
-        );
+        Order canceledOrder = orderRepository.findById(id);
+        assertEquals(OrderStatus.CANCELLED, canceledOrder.getStatus());
     }
 }
-
-
-

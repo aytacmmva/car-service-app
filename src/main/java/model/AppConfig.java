@@ -8,7 +8,7 @@ public class AppConfig {
     private static Properties properties = new Properties();
 
     static {
-        try (InputStream input = AppConfig.class.getClassLoader().getResourceAsStream("config.properties")) {
+        try (InputStream input = AppConfig.class.getClassLoader().getResourceAsStream("application.properties")) {
             if (input == null) {
                 System.out.println("Bağışlayın, fayl tapılmadı!");
             } else {
