@@ -1,47 +1,31 @@
 package repository;
+
+
+
+import enums.OrderStatus;
 import model.Order;
-import java.io.ObjectInputFilter;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
-public class OrderRepository implements Serializable {
-    private List<Order> orders;
-    private final Map<Long, Order> database = new HashMap<>();
-    private long currentId = 1;
+import java.util.Optional;
 
-    public Order save(Order order) {
-        if (order.getId() == null) {
+@Repository
+public interface OrderRepository extends JpaRepository<Order, Long> {
 
-            Order newOrder = new Order(currentId++, order.getPrice());
+    @Query("SELECT o FROM Order o LEFT JOIN FETCH o.repairers WHERE o.id = :id")
+    Optional<Order> findByIdWithRepairers(@Param("id") Long id);
 
-            database.put(newOrder.getId(), newOrder);
-            return newOrder;
-        }
-        database.put(order.getId(), order);
-        return order;
-    }
+    @Query(value = "SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.repairers",
+            countQuery = "SELECT COUNT(o) FROM Order o")
+    Page<Order> findAllWithRepairers(Pageable pageable);
 
-    public Order findById(Long id) {
-        return database.get(id);
-    }
+    @Query(value = "SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.repairers WHERE o.status = :status",
+            countQuery = "SELECT COUNT(o) FROM Order o WHERE o.status = :status")
+    Page<Order> findAllByStatusWithRepairers(@Param("status") OrderStatus status, Pageable pageable);
 
-    public List<Order> findAll() {
-        return new ArrayList<>(database.values());
-    }
-
-    public List<Order> findByStatus(ObjectInputFilter.Status status) {
-        return orders.stream()
-                .filter(o -> o.getStatus().name().equals(status.name()))
-                .collect(Collectors.toList());
-    }
-
-    public double getTotalRevenue() {
-        return orders.stream()
-                .mapToDouble(Order::getPrice)
-                .sum();
-    }
+    boolean existsByIdAndStatus(Long id, OrderStatus status);
 }

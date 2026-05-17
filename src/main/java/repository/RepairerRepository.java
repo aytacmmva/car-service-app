@@ -1,25 +1,14 @@
 package repository;
 
-
-
 import model.Repairer;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.Set;
 
-public class RepairerRepository {
-    private final Map<Long, Repairer> database = new HashMap<>();
+@Repository
+public interface RepairerRepository extends JpaRepository<Repairer, Long> {
 
-    public RepairerRepository() {
-        // Mock data for testing
-        database.put(1L, new Repairer(1L, "John Doe"));
-        database.put(2L, new Repairer(2L, "Jane Smith"));
-    }
-
-    public Repairer findById(Long id) {
-        return database.get(id);
-    }
-
-    public void addRepairer(Repairer johnDoe) {
-    }
+    List<Repairer> findAllByIdIn(Set<Long> ids);
 }
