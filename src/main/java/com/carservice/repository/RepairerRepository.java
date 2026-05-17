@@ -1,6 +1,6 @@
-package repository;
+package com.carservice.repository;
 
-import model.Repairer;
+import com.carservice.model.Repairer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

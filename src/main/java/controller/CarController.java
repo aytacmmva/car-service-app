@@ -1,6 +1,6 @@
 package controller;
 
-import model.Car;
+import com.carservice.model.Car;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;

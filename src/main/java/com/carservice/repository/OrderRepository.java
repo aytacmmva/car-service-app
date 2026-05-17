@@ -1,9 +1,9 @@
-package repository;
+package com.carservice.repository;
 
 
 
 import enums.OrderStatus;
-import model.Order;
+import com.carservice.model.Order;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

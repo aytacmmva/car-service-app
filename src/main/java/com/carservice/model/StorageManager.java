@@ -1,4 +1,4 @@
-package model;
+package com.carservice.model;
 
 import java.io.*;
 

@@ -1,6 +1,6 @@
-package service;
+package com.carservice.service;
 
-import model.Car;
+import com.carservice.model.Car;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;

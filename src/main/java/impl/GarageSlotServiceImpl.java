@@ -9,12 +9,12 @@ import exception.FeatureDisabledException;
 import exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mapper.GarageSlotMapper;
-import model.GarageSlot;
+import com.carservice.mapper.GarageSlotMapper;
+import com.carservice.model.GarageSlot;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import repository.GarageSlotRepository;
-import service.GarageSlotService;
+import com.carservice.repository.GarageSlotRepository;
+import com.carservice.service.GarageSlotService;
 
 import java.util.List;
 import java.util.stream.Collectors;

@@ -1,10 +1,10 @@
-package mapper;
+package com.carservice.mapper;
 
 import com.carservice.entity.Order;
 
 import dto.response.OrderResponse;
 import dto.response.RepairerResponse;
-import model.Repairer;
+import com.carservice.model.Repairer;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.ReportingPolicy;

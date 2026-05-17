@@ -1,4 +1,4 @@
-package service;
+package com.carservice.service;
 
 
 import dto.request.CreateGarageSlotRequest;

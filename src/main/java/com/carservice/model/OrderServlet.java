@@ -1,11 +1,11 @@
-package model;
+package com.carservice.model;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import service.OrderService;
+import com.carservice.service.OrderService;
 
 import java.io.IOException;
 import java.util.List;

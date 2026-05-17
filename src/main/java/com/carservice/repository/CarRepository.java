@@ -1,9 +1,9 @@
-package repository;
+package com.carservice.repository;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
-import model.Car;
+import com.carservice.model.Car;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

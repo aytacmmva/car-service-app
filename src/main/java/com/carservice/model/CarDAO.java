@@ -1,4 +1,4 @@
-package model;
+package com.carservice.model;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -34,7 +34,7 @@ public class CarDAO {
             while (rs.next()) {
                 Car car = new Car();
                 car.setId((long) rs.getInt("id"));
-                car.setModel(rs.getString("model"));
+                car.setModel(rs.getString("com/carservice/model"));
                 car.setPlateNumber(rs.getString("plate_number"));
                 cars.add(car);
             }

@@ -1,9 +1,8 @@
-package model;
+package com.carservice.model;
 
 import enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.*;
-import model.Repairer;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

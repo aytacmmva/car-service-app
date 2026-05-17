@@ -1,4 +1,4 @@
-package service;
+package com.carservice.service;
 
 import dto.request.AssignRepairersRequest;
 import dto.request.CreateOrderRequest;
@@ -6,7 +6,7 @@ import dto.response.OrderResponse;
 import dto.response.PageResponse;
 import enums.OrderSortField;
 import enums.OrderStatus;
-import model.Order;
+import com.carservice.model.Order;
 import org.springframework.data.domain.Sort;
 
 import java.math.BigDecimal;

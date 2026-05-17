@@ -1,6 +1,6 @@
-package repository;
+package com.carservice.repository;
 
-import model.GarageSlot;
+import com.carservice.model.GarageSlot;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

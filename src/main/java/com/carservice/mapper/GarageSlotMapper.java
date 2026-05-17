@@ -1,7 +1,7 @@
-package mapper;
+package com.carservice.mapper;
 
 import dto.response.GarageSlotResponse;
-import model.GarageSlot;
+import com.carservice.model.GarageSlot;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.ReportingPolicy;
