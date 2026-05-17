@@ -1,7 +1,7 @@
 package enums;
 
 public enum OrderStatus {
-    OPEN,
+    OPENED,
     COMPLETED,
     CANCELLED
 }

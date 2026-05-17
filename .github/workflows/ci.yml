@@ -1,0 +1,98 @@
+name: Car Service CI/CD
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main ]
+
+jobs:
+  # ── Run Tests on Pull Request ────────────────────────────────────────────
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: carservice_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run tests
+        run: ./mvnw test -B
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/carservice_test
+          DB_USERNAME: postgres
+          DB_PASSWORD: postgres
+
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v4
+        if: always()
+        with:
+          report_paths: '**/target/surefire-reports/TEST-*.xml'
+
+  # ── Build Artifact on push to main ───────────────────────────────────────
+  build:
+    name: Build JAR Artifact
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build JAR (skip tests - already tested)
+        run: ./mvnw clean package -DskipTests -B
+
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: car-service-${{ github.sha }}
+          path: target/*.jar
+          retention-days: 30
+
+      - name: Build Docker image
+        run: docker build -t car-service:${{ github.sha }} .
+
+      - name: Log in to Docker Hub
+        if: ${{ secrets.DOCKER_USERNAME != '' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Push Docker image
+        if: ${{ secrets.DOCKER_USERNAME != '' }}
+        run: |
+          docker tag car-service:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/car-service:latest
+          docker tag car-service:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/car-service:${{ github.sha }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/car-service:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/car-service:${{ github.sha }}
