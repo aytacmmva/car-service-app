@@ -1,5 +1,7 @@
 package com.carservice.model;
 
+import com.zaxxer.hikari.HikariDataSource;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +12,7 @@ public class CarDAO {
         String sql = "INSERT INTO cars (model, plate_number) VALUES (?, ?)";
 
         // try-with-resources: Bağlantı iş bitəndə avtomatik pool-a qayıdır
+        HikariDataSource DatabaseConfig = null;
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
@@ -27,6 +30,7 @@ public class CarDAO {
         List<Car> cars = new ArrayList<>();
         String sql = "SELECT * FROM cars";
 
+        HikariDataSource DatabaseConfig = null;
         try (Connection conn = DatabaseConfig.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {

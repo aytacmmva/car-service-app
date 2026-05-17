@@ -1,7 +1,8 @@
 package com.carservice.mapper;
 
-import com.carservice.entity.Order;
 
+
+import com.carservice.model.Order;
 import dto.response.OrderResponse;
 import dto.response.RepairerResponse;
 import com.carservice.model.Repairer;

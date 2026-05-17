@@ -26,10 +26,6 @@ public class OrderController {
 
     private final com.carservice.service.OrderService orderService;
 
-    public OrderController(com.carservice.service.OrderService orderService) {
-        this.orderService = orderService;
-    }
-
     @PostMapping
     @Operation(summary = "Create a new order", description = "Opens a new service order with the given price")
     @ApiResponse(responseCode = "201", description = "Order created successfully")

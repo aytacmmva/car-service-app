@@ -1,6 +1,7 @@
 package impl;
 
-
+import com.carservice.model.Order;
+import com.carservice.model.Repairer;
 import dto.request.AssignRepairersRequest;
 import dto.request.CreateOrderRequest;
 import dto.response.OrderResponse;
@@ -11,18 +12,19 @@ import exception.BusinessException;
 import exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import com.carservice.mapper.OrderMapper;
-import com.carservice.model.Repairer;
+import com.carservice.repository.OrderRepository;
+import com.carservice.repository.RepairerRepository;
+import com.carservice.service.OrderService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.carservice.repository.OrderRepository;
-import com.carservice.repository.RepairerRepository;
-import com.carservice.service.OrderService;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -40,15 +42,15 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderResponse createOrder(CreateOrderRequest request) {
-        log.info("Creating new order with price: {}", request.price());
+        log.debug("Creating new order with price: {}", request.price()); // ✅ info → debug
 
-        com.carservice.entity.Order order = com.carservice.entity.Order.builder()
+        Order order = Order.builder()
                 .price(request.price())
                 .status(OrderStatus.OPENED)
                 .openingTimestamp(LocalDateTime.now())
                 .build();
 
-        com.carservice.entity.Order savedOrder = orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
         log.info("Order created with id: {}", savedOrder.getId());
         return orderMapper.toResponse(savedOrder);
     }
@@ -56,16 +58,12 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderResponse assignRepairers(Long orderId, AssignRepairersRequest request) {
-        log.info("Assigning repairers {} to order {}", request.repairerIds(), orderId);
+        log.debug("Assigning repairers {} to order {}", request.repairerIds(), orderId); // ✅ debug
 
-        com.carservice.entity.Order order = orderRepository.findByIdWithRepairers(orderId)
+        Order order = orderRepository.findByIdWithRepairers(orderId)
                 .orElseThrow(() -> ResourceNotFoundException.order(orderId));
 
-        if (!order.isOpened()) {
-            throw new BusinessException(
-                    "Cannot assign repairers to order with status: " + order.getStatus() +
-                            ". Order must be in OPENED status.");
-        }
+        validateOrderIsOpened(order, "assign repairers to");
 
         List<Repairer> repairers = repairerRepository.findAllByIdIn(request.repairerIds());
 
@@ -82,7 +80,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         order.getRepairers().addAll(repairers);
-        com.carservice.entity.Order updatedOrder = orderRepository.save(order);
+        Order updatedOrder = orderRepository.save(order);
         log.info("Repairers assigned successfully to order {}", orderId);
         return orderMapper.toResponse(updatedOrder);
     }
@@ -90,16 +88,12 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderResponse completeOrder(Long orderId) {
-        log.info("Completing order {}", orderId);
+        log.debug("Completing order {}", orderId); // ✅ debug
 
-        com.carservice.entity.Order order = orderRepository.findByIdWithRepairers(orderId)
+        Order order = orderRepository.findByIdWithRepairers(orderId)
                 .orElseThrow(() -> ResourceNotFoundException.order(orderId));
 
-        if (!order.isOpened()) {
-            throw new BusinessException(
-                    "Cannot complete order with status: " + order.getStatus() +
-                            ". Order must be in OPENED status.");
-        }
+        validateOrderIsOpened(order, "complete");
 
         if (!order.hasRepairers()) {
             throw new BusinessException(
@@ -110,7 +104,7 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(OrderStatus.COMPLETED);
         order.setCompletionTimestamp(LocalDateTime.now());
 
-        com.carservice.entity.Order completedOrder = orderRepository.save(order);
+        Order completedOrder = orderRepository.save(order);
         log.info("Order {} completed successfully", orderId);
         return orderMapper.toResponse(completedOrder);
     }
@@ -118,20 +112,16 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderResponse cancelOrder(Long orderId) {
-        log.info("Cancelling order {}", orderId);
+        log.debug("Cancelling order {}", orderId); // ✅ debug
 
-        com.carservice.entity.Order order = orderRepository.findByIdWithRepairers(orderId)
+        Order order = orderRepository.findByIdWithRepairers(orderId)
                 .orElseThrow(() -> ResourceNotFoundException.order(orderId));
 
-        if (!order.isOpened()) {
-            throw new BusinessException(
-                    "Cannot cancel order with status: " + order.getStatus() +
-                            ". Order must be in OPENED status.");
-        }
+        validateOrderIsOpened(order, "cancel");
 
         order.setStatus(OrderStatus.CANCELLED);
 
-        com.carservice.entity.Order cancelledOrder = orderRepository.save(order);
+        Order cancelledOrder = orderRepository.save(order);
         log.info("Order {} cancelled successfully", orderId);
         return orderMapper.toResponse(cancelledOrder);
     }
@@ -148,22 +138,38 @@ public class OrderServiceImpl implements OrderService {
         Sort sort = Sort.by(direction, sortBy.getFieldName());
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<com.carservice.entity.Order> ordersPage;
-        if (statusFilter != null) {
-            ordersPage = orderRepository.findAllByStatusWithRepairers(statusFilter, pageable);
-        } else {
-            ordersPage = orderRepository.findAllWithRepairers(pageable);
-        }
+        // ✅ Sadələşdirilmiş — şərt bir xəttə sıxıldı
+        Page<Order> ordersPage = (statusFilter != null)
+                ? orderRepository.findAllByStatusWithRepairers(statusFilter, pageable)
+                : orderRepository.findAllWithRepairers(pageable);
 
-        Page<OrderResponse> responsePage = ordersPage.map(orderMapper::toResponse);
-        return PageResponse.from(responsePage);
+        return PageResponse.from(ordersPage.map(orderMapper::toResponse));
     }
 
     @Override
     @Transactional(readOnly = true)
     public OrderResponse getOrderById(Long orderId) {
-        com.carservice.entity.Order order = orderRepository.findByIdWithRepairers(orderId)
+        Order order = orderRepository.findByIdWithRepairers(orderId)
                 .orElseThrow(() -> ResourceNotFoundException.order(orderId));
         return orderMapper.toResponse(order);
+    }
+
+    @Override
+    public List<Order> getAllOrders() {
+        return List.of();
+    }
+
+    @Override
+    public Order openOrder(BigDecimal price) {
+        return null;
+    }
+
+    // Yeni köməkçi metod — 3 yerdə təkrarlanan status yoxlaması
+    private void validateOrderIsOpened(Order order, String action) {
+        if (!order.isOpened()) {
+            throw new BusinessException(
+                    "Cannot " + action + " order with status: " + order.getStatus() +
+                            ". Order must be in OPENED status.");
+        }
     }
 }
